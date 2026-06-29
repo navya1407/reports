@@ -1,0 +1,29 @@
+import re
+
+
+# Common model names: gpt-4o, gpt-4o-mini, gpt-4.1, gpt-4.1-mini, o1, o1-mini
+def calculate_tokens_consumed(text, model="gpt-4o-mini"):
+    """Return the number of tokens consumed by text.
+
+    Uses tiktoken when available for model-accurate counts. If tiktoken is not
+    installed, falls back to a simple approximation based on words/punctuation.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+
+    try:
+        import tiktoken
+
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            encoding = tiktoken.get_encoding("o200k_base")
+
+        return len(encoding.encode(text))
+    except ImportError:
+        return len(re.findall(r"\w+|[^\w\s]", text, re.UNICODE))
+
+
+if __name__ == "__main__":
+    sample_text = "Hello! This is a sample text."
+    print(calculate_tokens_consumed(sample_text))
